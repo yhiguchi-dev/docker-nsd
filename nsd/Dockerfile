@@ -4,8 +4,8 @@ ARG NSD_VERSION=4_6_1
 
 WORKDIR /build
 
-RUN apt update
-RUN apt install -y \
+RUN apt-get update
+RUN apt-get install -y \
   curl \
   unzip \
   build-essential \
@@ -30,9 +30,9 @@ FROM debian:bullseye-20230208-slim
 WORKDIR /app
 
 RUN \
-  apt update \
+  apt-get update \
   && \
-  apt install -y \
+  apt-get install -y \
     libevent-dev \
     libssl-dev \
   && \
