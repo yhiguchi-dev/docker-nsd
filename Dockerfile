@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as builder
+FROM debian:bullseye-20230208 as builder
 
 ARG NSD_VERSION=4_6_1
 
@@ -22,16 +22,28 @@ WORKDIR /build/nsd-NSD_${NSD_VERSION}_REL
 
 RUN aclocal && autoconf && autoheader
 RUN automake -a -c || exit 0;
+RUN ./configure -h
 RUN ./configure && make && make install
 
 FROM debian:bullseye-20230208-slim
 
 WORKDIR /app
 
-COPY --from=builder /usr/local/sbin/nsd-* /app
+RUN \
+  apt update \
+  && \
+  apt install -y \
+    libevent-dev \
+    libssl-dev \
+  && \
+  rm -rf /var/lib/apt/lists/* \
+  && \
+  mkdir -p /etc/nsd
 
-ENV PATH=$PATH:$/app
+COPY --from=builder /usr/local/sbin/nsd* /app
+
+VOLUME ["/etc/nsd"]
 
 EXPOSE 53/udp 53/tcp
 
-ENTRYPOINT [ "nsd" ]
+ENTRYPOINT [ "/app/nsd", "-d" ]
